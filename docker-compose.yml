@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  standalone:
+    container_name: redis-standalone
+    restart: unless-stopped
+    image: bsingh1904/request-bin-redis:${latest_tag}
+    ports:
+      - ${redis_port}:${redis_port}
+    volumes:
+      - redis-volume:/opt/redis/data
+    networks:
+      - redis-cluster
+  commander:
+    container_name: redis-commander
+    restart: unless-stopped
+    image: bsingh1904/redis-commander:${latest_tag}
+    depends_on:
+      - standalone
+    environment:
+      - REDIS_HOSTS=standalone:redis-standalone:${redis_port}
+    ports:
+      - ${commander_port}:8081
+    networks:
+      - redis-cluster
+
+volumes:
+  redis-volume:
+    driver: local
+
+networks:
+  redis-cluster:
+    name: redis-cluster
+    enable_ipv6: false
+    driver: bridge
